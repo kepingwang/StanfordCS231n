@@ -74,9 +74,7 @@ class TwoLayerNet(object):
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    U_hidden = X.dot(W1) + b1
-    A_hidden = self.ReLU(U_hidden) # A_hidden (N,H)
-    scores   = A_hidden.dot(W2) + b2
+    pass
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -94,8 +92,7 @@ class TwoLayerNet(object):
     # classifier loss. So that your results match ours, multiply the            #
     # regularization loss by 0.5                                                #
     #############################################################################
-    loss, loss_scores = self.softmax(scores, y)
-    loss += 0.5*reg*(np.sum(W1**2)+np.sum(W2**2))
+    pass
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -107,16 +104,7 @@ class TwoLayerNet(object):
     # and biases. Store the results in the grads dictionary. For example,       #
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
-    # loss_scores (N, C)
-    grads['b2'] = loss_scores.mean(axis=0)
-    grads['W2'] = A_hidden.T.dot(loss_scores) / float(N)
-    scores_A_hidden = W2 # W2 (H, C) # U_hidden (N, H)
-    A_hidden_U_hidden = (U_hidden>0).astype(int)
-    loss_U_hidden = loss_scores.dot(W2.T)*(U_hidden>0).astype(int) # loss_U_hidden (N, H)
-    grads['b1'] = loss_U_hidden.mean(axis=0)
-    grads['W1'] = X.T.dot(loss_U_hidden) / float(N)
-    grads['W2'] += reg*W2
-    grads['W1'] += reg*W1
+    pass
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -160,9 +148,7 @@ class TwoLayerNet(object):
       # TODO: Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
-      indices = np.random.choice(range(num_train), size=batch_size)
-      X_batch = X[indices]
-      y_batch = y[indices]
+      pass
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -177,10 +163,7 @@ class TwoLayerNet(object):
       # using stochastic gradient descent. You'll need to use the gradients   #
       # stored in the grads dictionary defined above.                         #
       #########################################################################
-      self.params['W1'] -= learning_rate * grads['W1']
-      self.params['b1'] -= learning_rate * grads['b1']
-      self.params['W2'] -= learning_rate * grads['W2']
-      self.params['b2'] -= learning_rate * grads['b2']
+      pass
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -225,30 +208,11 @@ class TwoLayerNet(object):
     ###########################################################################
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
-    U_hidden = X.dot(self.params['W1']) + self.params['b1']
-    A_hidden = self.ReLU(U_hidden) # A_hidden (N,H)
-    scores   = A_hidden.dot(self.params['W2']) + self.params['b2']
-    y_pred   = np.argmax(scores, axis=1)
+    pass
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################
 
     return y_pred
 
-  def ReLU(self, X):
-  	"""
-  	Return element-wise max(0,X)
-  	"""
-  	return X*(X>0)
 
-  def softmax(self, scores, y):
-  	"""
-	Return the loss with softmax function (without regularization)
-  	"""
-  	# scores (N, C)
-  	scores_correct_mask = np.indices(scores.shape)[1]==y[:,None]
-  	scores_correct = scores[ scores_correct_mask ]
-  	s = np.sum(np.e**scores,axis=1) # s (N,)
-  	loss = (-scores_correct + np.log(s)).mean()
-  	loss_scores = -(scores_correct_mask).astype(int) + np.e**scores/s[:,None]
-  	return loss, loss_scores

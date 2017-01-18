@@ -29,22 +29,7 @@ def softmax_loss_naive(W, X, y, reg):
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  N = X.shape[0]
-  C = W.shape[1]
-  for i in range(N):
-    f = X[i].dot(W)
-    ef= np.e**f 
-    s = np.sum(ef)
-    loss += -f[y[i]]+np.log(s)
-    # calculate gradient
-    df = +ef/s
-    df[y[i]] -= 1
-    dW += np.tile(X[i][:,None],(1,C))*df
-  
-  loss /= N
-  loss += 0.5*reg*np.sum(W*W)
-  dW /= N
-  dW += reg*W
+  pass
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
@@ -68,18 +53,7 @@ def softmax_loss_vectorized(W, X, y, reg):
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  N = X.shape[0]
-  C = W.shape[1]
-  f = X.dot(W) # f (N, C)
-  f_correct = np.choose(y, f.T) # f_correct (N,)
-  ef= np.e**f
-  s = ef.sum(axis=1) # s (N,)
-  loss = (-f_correct + np.log(s)).mean()
-  L_f = ef / s[:,None] - (np.indices([N,C])[1]==y[:,None]).astype(int) # L_f (N, C)
-  dW = X.T.dot(L_f) / float(N)
-
-  loss += 0.5*reg*np.sum(W**2)
-  dW += reg*W
+  pass
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################

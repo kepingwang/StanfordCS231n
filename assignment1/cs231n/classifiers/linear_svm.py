@@ -28,26 +28,19 @@ def svm_loss_naive(W, X, y, reg):
   for i in xrange(num_train):
     scores = X[i].dot(W)
     correct_class_score = scores[y[i]]
-    grad = np.tile(X[i],(num_classes,1)).T
-    grad_mult = np.zeros((X.shape[1],num_classes))
     for j in xrange(num_classes):
       if j == y[i]:
         continue
       margin = scores[j] - correct_class_score + 1 # note delta = 1
       if margin > 0:
         loss += margin
-        grad_mult[:,j] += 1
-        grad_mult[:,y[i]] += -1
-    dW += grad * grad_mult
 
   # Right now the loss is a sum over all training examples, but we want it
   # to be an average instead so we divide by num_train.
   loss /= num_train
-  dW   /= num_train
 
   # Add regularization to the loss.
   loss += 0.5 * reg * np.sum(W * W)
-  dW += reg * W
 
   #############################################################################
   # TODO:                                                                     #
@@ -76,10 +69,7 @@ def svm_loss_vectorized(W, X, y, reg):
   # Implement a vectorized version of the structured SVM loss, storing the    #
   # result in loss.                                                           #
   #############################################################################
-  scores = X.dot(W)
-  scores_correct = np.choose(y, scores.T)
-  margin = scores - scores_correct[:,None]+1
-  loss = (np.sum(margin*(margin>0))-X.shape[0]) / X.shape[0]
+  pass
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -94,10 +84,7 @@ def svm_loss_vectorized(W, X, y, reg):
   # to reuse some of the intermediate values that you used to compute the     #
   # loss.                                                                     #
   #############################################################################
-  select = np.tile(np.arange(margin.shape[1]),(margin.shape[0],1)) == y[:,None]
-  grad_mult = (margin>0).astype(int) - select*(margin>0).sum(axis=1)[:,None]
-  dW = X.T.dot(grad_mult) / float(X.shape[0])
-  dW += reg*W
+  pass
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
