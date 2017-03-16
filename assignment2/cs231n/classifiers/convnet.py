@@ -177,7 +177,7 @@ class ConvNetSolver(Solver):
     """
     num_train = self.X_train.shape[0]
     iterations_per_epoch = max(num_train / self.batch_size, 1)
-    num_iterations = self.num_epochs * iterations_per_epoch
+    num_iterations = int(self.num_epochs * iterations_per_epoch)
 
     for t in xrange(num_iterations):
       self._step()
