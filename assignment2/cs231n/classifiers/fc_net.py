@@ -246,7 +246,7 @@ class FullyConnectedNet(object):
       out, cache['affine_relu'] = affine_relu_forward(out, 
         self.params['W'+str(i+1)], 
         self.params['b'+str(i+1)])
-      if self.use_batchnorm:
+      if self.use_batchnorm: # TODO: this is WRONG. Batchnorm layer should be added before non-linearlity (ReLu)
         out, cache['batchnorm'] = batchnorm_forward(out,
           self.params['gamma'+str(i+1)],
           self.params['beta'+str(i+1)],
