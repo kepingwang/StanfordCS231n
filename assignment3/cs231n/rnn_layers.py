@@ -260,7 +260,17 @@ def lstm_step_forward(x, prev_h, prev_c, Wx, Wh, b):
   # TODO: Implement the forward pass for a single timestep of an LSTM.        #
   # You may want to use the numerically stable sigmoid implementation above.  #
   #############################################################################
-  pass
+  N, D = x.shape
+  _, H = prev_h.shape
+  a = x.dot(Wx) + prev_h.dot(Wh) + b
+  i = sigmoid(a[:,0:H])
+  f = sigmoid(a[:,H:2*H])
+  o = sigmoid(a[:,2*H:3*H])
+  g = np.tanh(a[:,3*H:4*H])
+  next_c = f * prev_c + i * g
+  tanh_next_c = np.tanh(next_c)
+  next_h = o * tanh_next_c
+  cache = (next_h, tanh_next_c, i, f, o, g, x, Wx, prev_c, prev_h, Wh)
   ##############################################################################
   #                               END OF YOUR CODE                             #
   ##############################################################################
@@ -285,14 +295,32 @@ def lstm_step_backward(dnext_h, dnext_c, cache):
   - dWh: Gradient of hidden-to-hidden weights, of shape (H, 4H)
   - db: Gradient of biases, of shape (4H,)
   """
-  dx, dh, dc, dWx, dWh, db = None, None, None, None, None, None
+  dx, dprev_h, dprev_c, dWx, dWh, db = None, None, None, None, None, None
   #############################################################################
   # TODO: Implement the backward pass for a single timestep of an LSTM.       #
   #                                                                           #
   # HINT: For sigmoid and tanh you can compute local derivatives in terms of  #
   # the output value from the nonlinearity.                                   #
   #############################################################################
-  pass
+  N, H = dnext_h.shape
+  next_h, tanh_next_c, i, f, o, g, x, Wx, prev_c, prev_h, Wh = cache
+  do = dnext_h * tanh_next_c
+  dnext_c_full = dnext_c + dnext_h * o * (1 - tanh_next_c*tanh_next_c)
+  di = dnext_c_full * g
+  dg = dnext_c_full * i
+  df = dnext_c_full * prev_c
+  dprev_c = dnext_c_full * f
+  da = np.zeros((N, 4*H))
+  da[:,0:H]     = di * i * (1 - i)
+  da[:,H:2*H]   = df * f * (1 - f)
+  da[:,2*H:3*H] = do * o * (1 - o)
+  da[:,3*H:4*H] = dg * (1 - g*g)
+
+  dx = da.dot(Wx.T)
+  dprev_h = da.dot(Wh.T)
+  dWx = x.T.dot(da)
+  dWh = prev_h.T.dot(da)
+  db = da.sum(axis=0)
   ##############################################################################
   #                               END OF YOUR CODE                             #
   ##############################################################################
@@ -327,7 +355,17 @@ def lstm_forward(x, h0, Wx, Wh, b):
   # TODO: Implement the forward pass for an LSTM over an entire timeseries.   #
   # You should use the lstm_step_forward function that you just defined.      #
   #############################################################################
-  pass
+  N, T, D = x.shape
+  _, H = h0.shape
+  h = np.zeros((N, T, H))
+  prev_c = np.zeros((N, H))
+  cache = []
+  for t in xrange(T):
+    prev_h = h[:,t-1,:] if t != 0 else h0
+    h[:,t,:], next_c, cachet = lstm_step_forward(x[:,t,:], prev_h, prev_c, Wx, Wh, b)
+    prev_c = next_c
+    cache.append(cachet)
+
   ##############################################################################
   #                               END OF YOUR CODE                             #
   ##############################################################################
@@ -355,7 +393,26 @@ def lstm_backward(dh, cache):
   # TODO: Implement the backward pass for an LSTM over an entire timeseries.  #
   # You should use the lstm_step_backward function that you just defined.     #
   #############################################################################
-  pass
+  N, T, H = dh.shape
+  _, D = cache[0][6].shape # x.shape
+  dx = np.zeros((N, T, D))
+  dWx = np.zeros((D, 4*H))
+  dWh = np.zeros((H, 4*H))
+  db = np.zeros((4*H))
+  dnext_ct = np.zeros((N, H))
+  dnext_ht = dh[:,T-1,:]
+  for t in reversed(xrange(T)):
+    gradt = lstm_step_backward(dnext_ht, dnext_ct, cache[t])
+    dxt, dprev_ht, dprev_ct, dWxt, dWht, dbt = gradt
+    dx[:,t,:] = dxt
+    if t == 0:
+      dh0 = dprev_ht
+    else:
+      dnext_ht = dh[:,t-1,:] + dprev_ht
+    dnext_ct = dprev_ct
+    dWx += dWxt
+    dWh += dWht
+    db += dbt
   ##############################################################################
   #                               END OF YOUR CODE                             #
   ##############################################################################
